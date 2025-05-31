@@ -9,11 +9,11 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis"]
 savefile = "model.pth"
 train_test_split = 0.3
-batch_size = 8
-seed = 1234
+batch_size = 16
+seed = 12345
 
 class ConditionDataset(Dataset):
     def __init__(self, df: pd.DataFrame, conditions):
@@ -80,16 +80,6 @@ test_df = test_df.fillna(0)
 scaler = StandardScaler()
 genes = list(set(train_df.columns).difference(set(conditions)))
 
-# train_genes = train_df[genes]
-# train_conditions = train_df[conditions]
-# train_genes = pd.DataFrame(scaler.fit_transform(train_genes), columns=genes, index=train_df.index)
-# train_df = pd.concat([train_genes, train_conditions], axis=1)
-
-# test_genes = test_df[genes]
-# test_conditions = test_df[conditions]
-# test_genes = pd.DataFrame(scaler.fit_transform(test_genes), columns=genes, index=test_df.index)
-# test_df = pd.concat([test_genes, test_conditions], axis=1)
-
 train_dataset = ConditionDataset(train_df, conditions)
 test_dataset = ConditionDataset(test_df, conditions)
 
@@ -97,7 +87,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 model = ConditionModel(len(train_df.columns) - len(conditions), len(conditions))
-optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.001)
+optimizer = optim.AdamW(model.parameters(), lr=0.0001, weight_decay=0.0001)
 if os.path.exists(savefile):
     checkpoint = torch.load(savefile, weights_only=True)
     model.load_state_dict(checkpoint["model_state_dict"])
