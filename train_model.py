@@ -9,7 +9,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -77,7 +77,6 @@ for condition in conditions:
 train_df = train_df.fillna(0)
 test_df = test_df.fillna(0)
 
-scaler = StandardScaler()
 genes = list(set(train_df.columns).difference(set(conditions)))
 
 train_dataset = ConditionDataset(train_df, conditions)
