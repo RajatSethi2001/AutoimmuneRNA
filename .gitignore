@@ -1,3 +1,4 @@
 salmon_index/
 *.gtf
 *.pth
+tmp/

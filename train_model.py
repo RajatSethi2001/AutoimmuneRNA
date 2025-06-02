@@ -9,7 +9,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis", "Crohn"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -39,11 +39,12 @@ class ConditionModel(nn.Module):
     
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
+        self.dropout = nn.Dropout(0.3)
     
     def forward(self, x):
-        x = self.relu(self.input_layer(x))
-        x = self.relu(self.layer1(x))
-        x = self.relu(self.layer2(x))
+        x = self.dropout(self.relu(self.input_layer(x)))
+        x = self.dropout(self.relu(self.layer1(x)))
+        x = self.dropout(self.relu(self.layer2(x)))
         x = self.sigmoid(self.layer3(x))
         return x
 
