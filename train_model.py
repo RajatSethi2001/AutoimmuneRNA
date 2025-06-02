@@ -9,7 +9,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -66,7 +66,7 @@ for condition in conditions:
         train_df = pd.concat([train_df, df])
     
     for test_file_index in range(split_index, len(filenames)):
-        filename = filenames[train_file_index]
+        filename = filenames[test_file_index]
         path = f"{condition}/{filename}"
         df = pd.read_csv(path, index_col=0)
         df = np.log1p(df)

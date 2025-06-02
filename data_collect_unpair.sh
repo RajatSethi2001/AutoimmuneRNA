@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
-accessions=("SRR24968404" "SRR8928967")
-output_dir="Ulcerative_Colitis"
+accessions=("SRR9835660" "SRR9835663" "SRR9835656" "SRR9835787" "ERR1993134" "ERR1993135" "ERR1993127" "SRR5659437" "SRR5659434" "SRR5176867")
+output_dir="Crohn"
 
 mkdir -p ${output_dir}
 for accession in "${accessions[@]}"; do
