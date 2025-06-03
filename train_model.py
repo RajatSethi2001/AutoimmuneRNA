@@ -9,7 +9,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis", "Crohn", "Parkinson"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis", "Crohn", "Parkinson", "Alzheimer"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
