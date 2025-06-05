@@ -2,3 +2,4 @@ salmon_index/
 *.gtf
 *.pth
 tmp/
+fasterq.tmp*

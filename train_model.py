@@ -9,7 +9,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis", "Crohn", "Parkinson", "Alzheimer"]
+conditions = ["Lupus", "Rheumatoid_Arthritis", "Multiple_Sclerosis", "Endometriosis", "Sarcoidosis", "Ulcerative_Colitis", "Crohn", "Parkinson", "Alzheimer", "Autism"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -87,12 +87,12 @@ train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 model = ConditionModel(len(train_df.columns) - len(conditions), len(conditions))
-optimizer = optim.AdamW(model.parameters(), lr=0.0001, weight_decay=0.0001)
+optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
+model = torch.compile(model)
 if os.path.exists(savefile):
     checkpoint = torch.load(savefile, weights_only=True)
     model.load_state_dict(checkpoint["model_state_dict"])
     optimizer.load_state_dict(checkpoint["optim_state_dict"])
-model = torch.compile(model)
 
 criterion = nn.CrossEntropyLoss()
 for epoch in range(100):
