@@ -2,6 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import random
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,7 +10,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma"]
+conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -30,26 +31,29 @@ class ConditionDataset(Dataset):
         return gene_data, condition_data
 
 class ConditionModel(nn.Module):
-    def __init__(self, num_genes, num_conditions):
-        super(ConditionModel, self).__init__()
-        self.input_layer = nn.Linear(num_genes, 100)
-        self.layer1 = nn.Linear(100, 100)
-        self.layer2 = nn.Linear(100, 100)
-        self.layer3 = nn.Linear(100, num_conditions)
+    def __init__(self, num_genes, num_conditions, hidden_neurons=100):
+        super().__init__()
+        self.input_layer = nn.Linear(num_genes, hidden_neurons)
+        self.bn0 = nn.BatchNorm1d(hidden_neurons)
+        self.layer1 = nn.Linear(hidden_neurons, hidden_neurons)
+        self.bn1 = nn.BatchNorm1d(hidden_neurons)
+        self.layer2 = nn.Linear(hidden_neurons, hidden_neurons)
+        self.bn2 = nn.BatchNorm1d(hidden_neurons)
+        self.output_layer = nn.Linear(hidden_neurons, num_conditions)
     
-        self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.3)
+        self.activation = nn.GELU()
+        self.dropout = nn.Dropout(0.4)
     
     def forward(self, x):
-        x = self.dropout(self.relu(self.input_layer(x)))
-        x = self.dropout(self.relu(self.layer1(x)))
-        x = self.dropout(self.relu(self.layer2(x)))
-        x = self.sigmoid(self.layer3(x))
+        x = self.dropout(self.activation(self.bn0(self.input_layer(x))))
+        x = self.dropout(self.activation(self.bn1(self.layer1(x))))
+        x = self.dropout(self.activation(self.bn2(self.layer2(x))))
+        x = self.output_layer(x)
         return x
 
 random.seed(seed)
 np.random.seed(seed)
+torch.manual_seed(seed)
 train_df = pd.DataFrame()
 test_df = pd.DataFrame()
 for condition in conditions:
@@ -80,13 +84,20 @@ test_df = test_df.fillna(0)
 
 genes = list(set(train_df.columns).difference(set(conditions)))
 
+threshold = 0.8
+zero_fraction = (train_df[genes] == 0).sum(axis=0) / len(train_df)
+genes = list(train_df[genes].loc[:, zero_fraction < threshold].columns)
+
+train_df = train_df[genes + conditions]
+test_df = test_df[genes + conditions]
+
 train_dataset = ConditionDataset(train_df, conditions)
 test_dataset = ConditionDataset(test_df, conditions)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-model = ConditionModel(len(train_df.columns) - len(conditions), len(conditions))
+model = ConditionModel(len(genes), len(conditions))
 optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
 model = torch.compile(model)
 if os.path.exists(savefile):
@@ -94,7 +105,10 @@ if os.path.exists(savefile):
     model.load_state_dict(checkpoint["model_state_dict"])
     optimizer.load_state_dict(checkpoint["optim_state_dict"])
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.BCEWithLogitsLoss()
+random.seed(int(time.time()))
+np.random.seed(int(time.time()))
+torch.manual_seed(int(time.time()))
 for epoch in range(100):
     print(f"Epoch: {epoch}")
     train_metrics = {condition: {"tp": 1, "tn": 1, "fp": 1, "fn": 1} for condition in conditions}
@@ -108,8 +122,8 @@ for epoch in range(100):
         optimizer.step()
 
         for batch_idx in range(len(outputs)):
-            output_batch = outputs[batch_idx]
-            label_batch = labels[batch_idx] 
+            output_batch = torch.clamp(outputs[batch_idx], 0.0, 1.0)
+            label_batch = torch.clamp(labels[batch_idx], 0.0, 1.0) 
             for condition_idx in range(len(output_batch)):
                 condition = conditions[condition_idx]
                 output_choice = round(output_batch[condition_idx].item())
@@ -149,8 +163,8 @@ for epoch in range(100):
         test_loss += loss.item()
 
         for batch_idx in range(len(outputs)):
-            output_batch = outputs[batch_idx]
-            label_batch = labels[batch_idx] 
+            output_batch = torch.clamp(outputs[batch_idx], 0.0, 1.0)
+            label_batch = torch.clamp(labels[batch_idx], 0.0, 1.0) 
             for condition_idx in range(len(output_batch)):
                 condition = conditions[condition_idx]
                 output_choice = round(output_batch[condition_idx].item())
