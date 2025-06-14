@@ -10,11 +10,11 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia"]
+conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
-seed = 12345
+seed = 123456
 
 class ConditionDataset(Dataset):
     def __init__(self, df: pd.DataFrame, conditions):
@@ -85,7 +85,7 @@ test_df = test_df.fillna(0)
 genes = list(set(train_df.columns).difference(set(conditions)))
 
 threshold = 0.8
-zero_fraction = (train_df[genes] == 0).sum(axis=0) / len(train_df)
+zero_fraction = (train_df[genes] <= 0.1).sum(axis=0) / len(train_df)
 genes = list(train_df[genes].loc[:, zero_fraction < threshold].columns)
 
 train_df = train_df[genes + conditions]
@@ -111,8 +111,9 @@ np.random.seed(int(time.time()))
 torch.manual_seed(int(time.time()))
 for epoch in range(100):
     print(f"Epoch: {epoch}")
-    train_metrics = {condition: {"tp": 1, "tn": 1, "fp": 1, "fn": 1} for condition in conditions}
+    train_metrics = {condition: {"tp": np.float32(0), "tn": np.float32(0), "fp": np.float32(0), "fn": np.float32(0)} for condition in conditions}
     train_loss = 0
+    model.train()
     for inputs, labels in train_dataloader:
         optimizer.zero_grad()
         outputs = model(inputs)
@@ -122,9 +123,9 @@ for epoch in range(100):
         optimizer.step()
 
         for batch_idx in range(len(outputs)):
-            output_batch = torch.clamp(outputs[batch_idx], 0.0, 1.0)
-            label_batch = torch.clamp(labels[batch_idx], 0.0, 1.0) 
-            for condition_idx in range(len(output_batch)):
+            output_batch = torch.sigmoid(outputs[batch_idx])
+            label_batch = torch.sigmoid(labels[batch_idx]) 
+            for condition_idx in range(len(conditions)):
                 condition = conditions[condition_idx]
                 output_choice = round(output_batch[condition_idx].item())
                 label_choice = round(label_batch[condition_idx].item())
@@ -150,12 +151,13 @@ for epoch in range(100):
         recall = tp / (tp + fn)
         f_score = 2 * precision * recall / (precision + recall)
         print(f"{condition} Train Metrics: Precision = {round(precision, 3)}, Recall = {round(recall, 3)}, F-Score = {round(f_score, 3)}")
-    train_loss /= len(train_dataset)
+    
+    train_loss /= (len(train_dataset) / batch_size)
     print(f"Train Loss = {train_loss}")    
 
     print()
     model.eval()
-    test_metrics = {condition: {"tp": 1, "tn": 1, "fp": 1, "fn": 1} for condition in conditions}
+    test_metrics = {condition: {"tp": np.float32(0), "tn": np.float32(0), "fp": np.float32(0), "fn": np.float32(0)} for condition in conditions}
     test_loss = 0
     for inputs, labels in test_dataloader:
         outputs = model(inputs)
@@ -163,9 +165,9 @@ for epoch in range(100):
         test_loss += loss.item()
 
         for batch_idx in range(len(outputs)):
-            output_batch = torch.clamp(outputs[batch_idx], 0.0, 1.0)
-            label_batch = torch.clamp(labels[batch_idx], 0.0, 1.0) 
-            for condition_idx in range(len(output_batch)):
+            output_batch = torch.sigmoid(outputs[batch_idx])
+            label_batch = torch.sigmoid(labels[batch_idx]) 
+            for condition_idx in range(len(conditions)):
                 condition = conditions[condition_idx]
                 output_choice = round(output_batch[condition_idx].item())
                 label_choice = round(label_batch[condition_idx].item())
@@ -191,10 +193,10 @@ for epoch in range(100):
         recall = tp / (tp + fn)
         f_score = 2 * precision * recall / (precision + recall)
         print(f"{condition} Test Metrics: Precision = {round(precision, 3)}, Recall = {round(recall, 3)}, F-Score = {round(f_score, 3)}")
-    test_loss /= len(test_dataset)
+    
+    test_loss /= (len(test_dataset) / batch_size)
     print(f"Test Loss = {test_loss}")
     print()
-    model.train()
 
     torch.save({
         "model_state_dict": model.state_dict(),

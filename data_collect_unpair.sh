@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
-runs=("SRR18719765" "SRR18719764" "SRR18719763" "SRR18719762" "SRR18719761" "SRR18719760" "SRR18719759" "SRR18719758" "SRR18719753" "SRR18719718" "SRR18719717" "SRR18719715" "SRR18719713" "SRR18719711" "SRR18719708" "SRR18719438" "SRR18719437" "SRR18719436" "SRR18719434" "SRR18719432" "SRR18719431" "SRR18719430" "SRR18719429" "SRR18719428" "SRR18719426" "SRR18719686" "SRR18719683" "SRR18719681" "SRR18719680" "SRR18719679" "SRR18719678" "SRR18719675" "SRR18720165" "SRR18720162" "SRR18719951" "SRR18719949" "SRR18719947" "SRR18719938" "SRR18719920" "SRR18719914" "SRR18719913" "SRR18719912" "SRR18719908" "SRR18719907" "SRR18719881" "SRR18719879" "SRR18719876" "SRR18719875" "SRR18720348" "SRR18720347" "SRR18720345" "SRR18720342" "SRR18720303" "SRR18720299" "SRR18720295" "SRR18720293" "SRR18720289" "SRR18720288" "SRR18719595" "SRR18719594" "SRR18719592" "SRR18719589" "SRR18719551" "SRR18719550" "SRR18719549" "SRR18719548" "SRR18719545" "SRR18719827" "SRR18719824" "SRR18719822" "SRR18719820" "SRR18719818" "SRR18719817" "SRR18720070" "SRR18720068" "SRR18719863" "SRR18719861" "SRR18719857" "SRR18719856" "SRR18719854" "SRR18719853" "SRR18719852" "SRR18719851" "SRR18719849" "SRR18719782" "SRR18719781" "SRR18719780" "SRR18719778" "SRR18719776" "SRR18719775" "SRR18719774" "SRR18719773" "SRR18719772" "SRR18719770" "SRR18719472")
-output_dir="Crohns_Disease"
+runs=("SRR12841967" "SRR12841966" "SRR12841965")
+output_dir="Aneurysm"
 
 mkdir -p ${output_dir}
 rm -rf tmp
@@ -15,6 +15,15 @@ for run in "${runs[@]}"; do
             cat tmp/${acc}.fastq >> tmp/${run_name}.fastq
         fi
     done
+    round_million=$(awk -v lines=$(wc -l < tmp/${run_name}.fastq) \
+                      -v bytes=$(stat -c %s tmp/${run_name}.fastq) \
+                      'BEGIN {
+                          val = (lines / bytes) * (500 * 1024 * 1024) * 5;
+                          rounded = int((val + 500000) / 1000000) * 1000000;
+                          print rounded
+                      }')
+    head -n ${round_million} tmp/${run_name}.fastq > tmp/${run_name}_half.fastq
+    mv tmp/${run_name}_half.fastq tmp/${run_name}.fastq
     fastp -i tmp/${run_name}.fastq -o tmp/${run_name}_trim.fq -j tmp/fastp.json -h tmp/fastp.html
     salmon quant -i salmon_index -l A -r tmp/${run_name}_trim.fq -o tmp --validateMappings
     python tx2gene.py -p tmp/quant.sf -o ${output_dir}/${run_name}.csv
