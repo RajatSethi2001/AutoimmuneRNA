@@ -10,7 +10,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis"]
+conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis"]
 savefile = "model.pth"
 train_test_split = 0.3
 batch_size = 16
@@ -94,8 +94,8 @@ test_df = test_df[genes + conditions]
 train_dataset = ConditionDataset(train_df, conditions)
 test_dataset = ConditionDataset(test_df, conditions)
 
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
 model = ConditionModel(len(genes), len(conditions))
 optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
