@@ -1,1 +1,36 @@
-("Homo sapiens"[Organism]) AND ("cluster_public"[prop]) AND ("biomol rna"[Properties]) AND ("blood"[All Fields]) NOT ("miRNA"[All Fields] OR "microRNA"[All Fields] OR "small RNA"[All Fields] OR "ncRNA"[All Fields] OR "snRNA"[All Fields] OR "snoRNA"[All Fields])
+("Homo sapiens"[Organism])
+AND ("cluster_public"[prop])
+AND ("biomol rna"[Properties])
+AND ("blood"[All Fields] OR "whole blood"[All Fields])
+NOT ("miRNA"[All Fields]
+     OR "microRNA"[All Fields]
+     OR "small RNA"[All Fields]
+     OR "ncRNA"[All Fields]
+     OR "snRNA"[All Fields]
+     OR "snoRNA"[All Fields]
+     OR "PBMC"[All Fields]
+     OR "peripheral blood mononuclear"[All Fields]
+     OR "monocyte"[All Fields]
+     OR "lymphocyte"[All Fields]
+     OR "B cell"[All Fields]
+     OR "T cell"[All Fields]
+     OR "CD4"[All Fields]
+     OR "CD8"[All Fields]
+     OR "plasma"[All Fields]
+     OR "serum"[All Fields]
+     OR "leukocyte"[All Fields]
+     OR "buffy coat"[All Fields]
+     OR "Ficoll"[All Fields]
+     OR "white blood cell"[All Fields]
+     OR "sorted"[All Fields]
+     OR "enriched"[All Fields]
+     OR "targeted"[All Fields]
+     OR "capture"[All Fields]
+     OR "amplicon"[All Fields]
+     OR "cell line"[All Fields]
+     OR "in vitro"[All Fields]
+     OR "immortalized"[All Fields]
+     OR "Jurkat"[All Fields]
+     OR "THP-1"[All Fields]
+     OR "K562"[All Fields]
+     OR "HL-60"[All Fields])

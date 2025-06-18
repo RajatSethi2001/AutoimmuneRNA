@@ -1,8 +1,8 @@
 #!/bin/bash
 ulimit -v $((4000 * 1024))
 set -x
-runs=("SRR19539948")
-output_dir="Antiphospholipid_Syndrome"
+runs=("SRR7976022" "SRR7976019")
+output_dir="Leprosy"
 file_limit=500000000
 compress_factor=5
 
