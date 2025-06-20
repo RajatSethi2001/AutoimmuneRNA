@@ -10,9 +10,9 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia"]
+conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue"]
 savefile = "model.pth"
-train_test_split = 0.3
+train_test_split = 0.2
 batch_size = 16
 seed = 123456
 
@@ -85,7 +85,7 @@ test_df = test_df.fillna(0)
 genes = list(set(train_df.columns).difference(set(conditions)))
 
 threshold = 0.8
-zero_fraction = (train_df[genes] <= 0.1).sum(axis=0) / len(train_df)
+zero_fraction = (train_df[genes] <= 0.5).sum(axis=0) / len(train_df)
 genes = list(train_df[genes].loc[:, zero_fraction < threshold].columns)
 
 train_df = train_df[genes + conditions]
