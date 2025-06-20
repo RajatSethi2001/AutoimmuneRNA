@@ -1,8 +1,8 @@
 #!/bin/bash
 ulimit -v $((4000 * 1024))
 set -x
-runs=("ERR14760948" "ERR14760962" "ERR14760943" "ERR14760965")
-output_dir="Prostate_Cancer"
+runs=("SRR28028003" "SRR28028004" "SRR28028015")
+output_dir="Dengue"
 file_limit=500000000
 compress_factor=5
 
