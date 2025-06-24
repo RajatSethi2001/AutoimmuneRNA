@@ -1,8 +1,8 @@
 #!/bin/bash
-ulimit -v $((4000 * 1024))
+ulimit -v $((3000 * 1024))
 set -x
-runs=("SRR19142086" "SRR19142087" "SRR19142088" "SRR19142089" "SRR19142090")
-output_dir="Acute_Ischemic_Stroke"
+runs=("SRR16316954")
+output_dir="Depression"
 file_limit=500000000
 compress_factor=5
 
