@@ -10,7 +10,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-conditions = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever"]
+directory_list = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever", "Hypertension,Drug_Abuse", "Hypertension"]
 savefile = "model.pth"
 train_test_split = 0.2
 batch_size = 16
@@ -56,33 +56,41 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 train_df = pd.DataFrame()
 test_df = pd.DataFrame()
-for condition in conditions:
-    filenames = os.listdir(condition)
+conditions = set()
+for directory in directory_list:
+    filenames = os.listdir(directory)
     random.shuffle(filenames)
 
     split_index = int(len(filenames) * (1 - train_test_split))
     for train_file_index in range(0, split_index):
         filename = filenames[train_file_index]
-        path = f"{condition}/{filename}"
+        path = f"{directory}/{filename}"
         df = pd.read_csv(path, index_col=0)
         df = np.log1p(df)
         df = df.transpose()
-        df[condition] = 1
+        dir_conditions = directory.split(",")
+        for condition in dir_conditions:
+            df[condition] = 1
+            conditions.add(condition)
         train_df = pd.concat([train_df, df])
     
     for test_file_index in range(split_index, len(filenames)):
         filename = filenames[test_file_index]
-        path = f"{condition}/{filename}"
+        path = f"{directory}/{filename}"
         df = pd.read_csv(path, index_col=0)
         df = np.log1p(df)
         df = df.transpose()
-        df[condition] = 1
+        dir_conditions = directory.split(",")
+        for condition in dir_conditions:
+            df[condition] = 1
+            conditions.add(condition)
         test_df = pd.concat([test_df, df])
 
 train_df = train_df.fillna(0)
 test_df = test_df.fillna(0)
 
-genes = list(set(train_df.columns).difference(set(conditions)))
+genes = list(set(train_df.columns).difference(conditions))
+conditions = list(conditions)
 
 threshold = 0.8
 zero_fraction = (train_df[genes] <= 0.5).sum(axis=0) / len(train_df)

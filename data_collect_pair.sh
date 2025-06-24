@@ -1,8 +1,8 @@
 #!/bin/bash
 ulimit -v $((4000 * 1024))
 set -x
-runs=()
-output_dir="Glioblastoma"
+runs=("SRR19142086" "SRR19142087" "SRR19142088" "SRR19142089" "SRR19142090")
+output_dir="Acute_Ischemic_Stroke"
 file_limit=500000000
 compress_factor=5
 
