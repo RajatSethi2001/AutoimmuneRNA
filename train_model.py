@@ -10,7 +10,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-directory_list = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever", "Hypertension,Drug_Abuse", "Hypertension", "COVID19", "Depression", "PTSD", "HIV", "HIV,Tuberculosis", "Malaria", "Hidradenitis_Supparativa"]
+directory_list = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever", "Hypertension,Drug_Abuse", "Hypertension", "COVID19", "Depression", "PTSD", "HIV", "HIV,Tuberculosis", "Malaria", "Hidradenitis_Supparativa", "SFTS", "Cystic_Fibrosis"]
 savefile = "model.pth"
 train_test_split = 0.2
 batch_size = 16
