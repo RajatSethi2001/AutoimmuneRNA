@@ -76,4 +76,11 @@ NOT ("miRNA"[All Fields]
      OR "vaccination"[All Fields]
      OR "immunization"[All Fields]
      OR "single cell"[All Fields]
-     OR "scRNA"[All Fields])
+     OR "scRNA"[All Fields]
+     OR "TCR-seq"
+     OR "BCR-seq"
+     OR "T-cell receptor sequencing"
+     OR "B-cell receptor sequencing"
+     OR "V(D)J"
+     OR "immune repertoire"
+     OR "clonality")
