@@ -1,8 +1,7 @@
 #!/bin/bash
-ulimit -v $((4000 * 1024))
 set -x
-runs=("SRR7876789" "SRR7876788" "SRR7876787" "SRR7876786")
-output_dir="Rheumatoid_Arthritis"
+runs=("SRR32240747" "SRR32240748" "SRR32240749" "SRR32240750" "SRR32240751" "SRR32240752" "SRR32240753" "SRR32240754" "SRR32240755" "SRR32240756" "SRR32240757" "SRR32240758" "SRR32240759" "SRR32240760")
+output_dir="Polycystic_Kidney_Disease"
 file_limit=500000000
 compress_factor=5
 

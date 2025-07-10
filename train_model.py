@@ -10,7 +10,7 @@ import torch.optim as optim
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
-directory_list = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever", "Hypertension,Drug_Abuse", "Hypertension", "COVID19", "Depression", "PTSD", "HIV", "HIV,Tuberculosis", "Malaria", "Hidradenitis_Supparativa", "SFTS", "Cystic_Fibrosis", "Chikungunya", "Rheumatoid_Arthritis"]
+directory_list = ["Lupus", "Podoconiosis", "Primary_Sclerosing_Cholangitis", "Ulcerative_Colitis", "Shingles", "Sepsis", "Scleroderma", "MRSA_Bacteremia", "Crohns_Disease", "Acute_Pancreatitis", "Aneurysm", "Tuberculosis", "Acute_Myeloid_Leukemia", "Endocarditis", "Schistosomiasis", "Leprosy", "Amyotrophic_Lateral_Sclerosis", "Chronic_Myeloid_Leukemia", "Dengue", "Alzheimer", "Restless_Legs_Syndrome", "Coronary_Artery_Disease", "COPD", "Breast_Cancer", "Crimean_Congo_Hemorrhagic_Fever", "Hypertension,Drug_Abuse", "Hypertension", "COVID19", "Depression", "PTSD", "HIV", "HIV,Tuberculosis", "Malaria", "Hidradenitis_Supparativa", "SFTS", "Cystic_Fibrosis", "Chikungunya", "Rheumatoid_Arthritis", "Polycystic_Kidney_Disease"]
 savefile = "model.pth"
 train_test_split = 0.2
 batch_size = 16
@@ -45,16 +45,16 @@ class ConditionModel(nn.Module):
         self.dropout = nn.Dropout(0.4)
     
     def forward(self, x):
-        x_min = x.min(dim=0, keepdim=True).values
-        x_max = x.max(dim=0, keepdim=True).values
-        denominator = x_max - x_min
-        denominator[denominator == 0] = 1e-6
-        x = (x - x_min) / denominator
         x = self.dropout(self.activation(self.bn0(self.input_layer(x))))
         x = self.dropout(self.activation(self.bn1(self.layer1(x))))
         x = self.dropout(self.activation(self.bn2(self.layer2(x))))
         x = self.output_layer(x)
         return x
+
+def robust_minmax(col, lower=5, upper=95):
+    lo = np.percentile(col, lower)
+    hi = np.percentile(col, upper)
+    return np.clip((col - lo) / (hi - lo), 0, 1)
 
 random.seed(seed)
 np.random.seed(seed)
@@ -63,6 +63,7 @@ train_df = pd.DataFrame()
 test_df = pd.DataFrame()
 conditions = set()
 for directory in directory_list:
+    print(f"Processing Directory: {directory}")
     filenames = os.listdir(directory)
     random.shuffle(filenames)
 
@@ -72,6 +73,7 @@ for directory in directory_list:
         path = f"{directory}/{filename}"
         df = pd.read_csv(path, index_col=0)
         df = np.log1p(df)
+        df = df.apply(robust_minmax)
         df = df.transpose()
         dir_conditions = directory.split(",")
         for condition in dir_conditions:
@@ -84,6 +86,7 @@ for directory in directory_list:
         path = f"{directory}/{filename}"
         df = pd.read_csv(path, index_col=0)
         df = np.log1p(df)
+        df = df.apply(robust_minmax)
         df = df.transpose()
         dir_conditions = directory.split(",")
         for condition in dir_conditions:
@@ -98,11 +101,14 @@ genes = list(set(train_df.columns).difference(conditions))
 conditions = list(conditions)
 
 threshold = 0.8
-zero_fraction = (train_df[genes] <= 0.5).sum(axis=0) / len(train_df)
+zero_fraction = (train_df[genes] <= 0.1).sum(axis=0) / len(train_df)
 genes = list(train_df[genes].loc[:, zero_fraction < threshold].columns)
 
 train_df = train_df[genes + conditions]
 test_df = test_df[genes + conditions]
+
+print(train_df)
+print(test_df)
 
 train_dataset = ConditionDataset(train_df, conditions)
 test_dataset = ConditionDataset(test_df, conditions)
@@ -165,7 +171,7 @@ for epoch in range(100):
         f_score = 2 * precision * recall / (precision + recall)
         print(f"{condition} Train Metrics: Precision = {round(precision, 3)}, Recall = {round(recall, 3)}, F-Score = {round(f_score, 3)}")
     
-    train_loss /= (len(train_dataset) / batch_size)
+    train_loss /= len(train_dataset)
     print(f"Train Loss = {train_loss}")    
 
     print()
@@ -207,7 +213,7 @@ for epoch in range(100):
         f_score = 2 * precision * recall / (precision + recall)
         print(f"{condition} Test Metrics: Precision = {round(precision, 3)}, Recall = {round(recall, 3)}, F-Score = {round(f_score, 3)}")
     
-    test_loss /= (len(test_dataset) / batch_size)
+    test_loss /= len(test_dataset)
     print(f"Test Loss = {test_loss}")
     print()
 
