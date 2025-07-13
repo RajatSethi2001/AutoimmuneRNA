@@ -3,3 +3,6 @@ salmon_index/
 *.pth
 tmp/
 fasterq.tmp*
+*.gctx
+instinfo_beta.txt
+compoundinfo_beta.txt
