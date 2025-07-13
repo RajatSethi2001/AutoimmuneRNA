@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
-runs=("SRR28961490")
-output_dir="Epilepsy"
+runs=("SRR33797050")
+output_dir="Healthy"
 file_limit=500000000
 compress_factor=5
 
