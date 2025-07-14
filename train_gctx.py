@@ -59,10 +59,9 @@ def robust_minmax(vector, lower=5, upper=95):
     return np.clip((vector - lo) / (hi - lo), 0, 1)
 
 def encode_smiles(smiles, selfies_alphabet):
-    vocab_dict = {token: i for i, token in enumerate(sorted(selfies_alphabet))}
+    vocab_dict = {token: i for i, token in enumerate(selfies_alphabet)}
     selfies = sf.encoder(smiles)
     tokens = list(sf.split_selfies(selfies))
-    # tokens = [x for x in tokens if x != "."]
     indices = [vocab_dict[token] for token in tokens]
     selfies_one_hot = np.eye(len(vocab_dict))[indices]
     return selfies_one_hot
@@ -158,7 +157,7 @@ class GenePertDataset(Dataset):
         return self.gene_symbols
 
 class GenePertModel(nn.Module):
-    def __init__(self, num_genes, alphabet_len, ctl_fc_size=500):
+    def __init__(self, num_genes, alphabet_len, ctl_fc_size=200):
         super().__init__()
         self.selfies_rnn = nn.GRU(
             input_size=alphabet_len,
@@ -212,7 +211,6 @@ def main():
 
     criterion = nn.MSELoss()
     model = GenePertModel(len(dataset.get_gene_symbols()), len(dataset.get_selfies_alphabet()))
-    # model = torch.compile(model)
     optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
 
     if os.path.exists(model_savefile):
