@@ -36,7 +36,7 @@ class ConditionModel(nn.Module):
     
         self.activation = nn.GELU()
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.0)
     
     def forward(self, x):
         x = self.dropout(self.activation(self.input_layer(x)))
@@ -67,7 +67,8 @@ def main():
     savefile = "Models/condition_model.pth"
     train_test_split = 0.2
     batch_size = 64
-    genes = pd.read_csv("Data/important_genes.csv", header=None)[1].to_list()
+    with open("Data/important_genes.txt", "r") as f:
+        genes = f.read().splitlines()
 
     condition_df = pd.DataFrame()
     conditions = set()
@@ -80,7 +81,6 @@ def main():
         for filename in filenames:
             csv_path = f"{path}/{filename}"
             df = pd.read_csv(csv_path, index_col=0)
-            df.index = [index.split(".")[0] for index in df.index]
             df = np.log2(df + 1)
             df = df.apply(get_zscores, axis=0)
             df = df.apply(get_zscore_minmax, axis=0)
